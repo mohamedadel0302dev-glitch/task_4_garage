@@ -308,18 +308,62 @@ class GarageManager
  }
 //---------------------------------------------------------//
     //----------------- tune_up------------------//
-     void tune_up ()
-     {
-         viewCars();
-         cout<<"select the car you want to update\n";
-         int carNumber ;
-         cin>>carNumber;
-         Car* car = findCar(carNumber);
+    void tune_up ()
+ {
+     viewCars();
+     cout << "Enter the number of the car you want to update: ";
+     int carNumber;
+     cin >> carNumber;
+
+     Car* car = findCar(carNumber);
      if (car != NULL)
      {
-         car->display();
+         cout << "1. Update Speed\n";
+         cout << "2. Update Capacity\n";
+         cout << "3. Update Age\n";
+         cout << "4. Update Racing Team\n";
+         cout << "Enter your choice: ";
+         int choice;
+         cin >> choice;
+
+         if (choice == 1)
+         {
+             int s;
+             cout << "Enter new speed: ";
+             cin >> s;
+             car->setSpeed(s);
+         }
+         else if (choice == 2)
+         {
+             int c;
+             cout << "Enter new capacity: ";
+             cin >> c;
+             car->setCapacity(c);
+         }
+         else if (choice == 3)
+         {
+             int a;
+             cout << "Enter new age: ";
+             cin >> a;
+             car->setAge(a);
+         }
+         else if (choice == 4)
+         {
+             string team;
+             cout << "Enter new team: ";
+             cin >> team;
+             car->serRacingTeam(team);
+         }
+         else
+         {
+             cout << "Invalid choice!\n";
+             return;
+         }
+
+         cout << "Car updated successfully!\n";
+         save_to_DB(fileName);
      }
-     }
+ }
 // -------------------------------------------------------------------------//
     //------------------- find by number ------------------------//
 
@@ -369,12 +413,33 @@ class GarageManager
               if (vehicles[i]->getCarNumber() == car->getCarNumber())
               {
                   vehicles.erase(vehicles.begin()+i); // delete it
+                  break;
               }
           }
          save_to_DB(fileName);
      }
  }
 
+    void garageReport()
+ {
+     if (vehicles.empty())
+     {
+         cout << "Garage is empty!" << endl;
+         return;
+     }
+
+     int totalCars = vehicles.size();
+     double totalScore = 0;
+     for (int i = 0; i < vehicles.size(); i++)
+     {
+         totalScore += vehicles[i]->calculatePerformanceScore();
+     }
+     cout << "============= Garage Report =============" << endl;
+     cout << "-----------------------------------------"<<endl;
+     cout<<"Total number of cars: "<<totalCars<<endl;
+     cout << "Total score: " << totalScore << endl;
+
+ }
 
 };
 
