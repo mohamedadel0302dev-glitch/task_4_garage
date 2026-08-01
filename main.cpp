@@ -8,7 +8,6 @@ using namespace std;
 class Car
 {
     private:
-
     string fullnName;
     string racingTeam;
     string type;
@@ -212,7 +211,76 @@ class GarageManager
  public:
 
     //
+ void save_to_DB(const string& fileName = "garage_db.txt") {
+        ofstream file(fileName);
+        if (!file.is_open()) {
+            cout << "[ERROR] Could not open file for writing!\n";
+            return;
+        }
 
+        for (const auto& car : vehicles) {
+            file << car->toCSV() << "\n";
+        }
+
+        file.close();
+    }
+
+    // initialize method
+    void readDB (string fileName)
+    {
+        ifstream file(fileName);
+        if (!file.is_open())
+        {
+            return;
+        }
+        string line;
+        while (getline(file,line))
+        {
+            stringstream subtr(line);
+            // declare the base variables
+            string type, fullName, racingTeam; // the string
+            string carNumber, speed, age, capacity; // will be int
+            getline(subtr,type,',');
+            getline(subtr,fullName,',');
+            getline(subtr,racingTeam,',');
+            getline(subtr,speed,',');
+            getline(subtr,carNumber,',');
+            getline(subtr,age,',');
+            getline(subtr,capacity,',');
+
+            if (type=="Racer")
+            {
+                string nomOfRaceseCompleted, lapsCompleted;
+                getline(subtr,nomOfRaceseCompleted,',');
+                getline(subtr,lapsCompleted,',');
+                vehicles.push_back(new Racer(fullName,
+                    racingTeam,
+                    stoi(speed),
+                    stoi(carNumber),
+                    stoi(age),
+                    stoi(capacity),
+                    stoi(nomOfRaceseCompleted),
+                    stoi(lapsCompleted))); // add racer car
+            }
+            else if (type=="Supported Veichle")
+            {
+                string crewSize; // int
+                string reliabilityRatig; // double
+                getline(subtr,crewSize,',');
+                getline(subtr,reliabilityRatig,',');
+                vehicles.push_back(new SupportedVeichles(
+                fullName,
+                racingTeam,
+                stoi(speed),
+                stoi(carNumber),
+                stoi(age),
+                stoi(capacity),
+                stoi(crewSize),
+                stod(reliabilityRatig)
+            )); // add supported vehicle
+            }
+        }
+    }
 
 // add car with check that the car isn't exist
     void addCar(Car *c)
@@ -227,9 +295,86 @@ class GarageManager
         }
         vehicles.push_back(c);
         cout << "Car " << c->getFullName() << " added." << endl;
-
+        save_to_DB(fileName);
     }
     // view the cars in the garage
+   void viewCars()
+ {
+     for (int i = 0; i < vehicles.size(); i++)
+     {
+         cout<<i+1<<" "; vehicles[i]->display();
+         cout<<"-------------------------------"<<"\n";
+     }
+ }
+//---------------------------------------------------------//
+    //----------------- tune_up------------------//
+     void tune_up ()
+     {
+         viewCars();
+         cout<<"select the car you want to update\n";
+         int carNumber ;
+         cin>>carNumber;
+         Car* car = findCar(carNumber);
+     if (car != NULL)
+     {
+         car->display();
+     }
+     }
+// -------------------------------------------------------------------------//
+    //------------------- find by number ------------------------//
+
+    Car* findCar(int number) const
+ {
+     for (Car* car : vehicles)
+     {
+         if (car->getCarNumber() == number)
+         {
+             cout << "\n[FOUND] Vehicle Details:" << endl;
+             car->display();
+             return car;
+         }
+     }
+
+     cout << "No vehicle found with number: " << number << endl;
+     return nullptr;
+ }
+    //-------------------------------- find by name -------------------------//
+
+     void findCar(const string& name) const
+     {
+         for (Car* car : vehicles)
+         {
+             if (car->getFullName() == name)
+             {
+                 cout << " Vehicle Details:" << endl;
+                 car->display();
+
+             }
+         }
+         cout << "No vehicle found with name: " << name << endl;
+     }
+    // ---------------------------------------------------------------------//
+    //-------------------- retire ----------------------------------------//
+    void rtire ()
+ {
+     viewCars();
+     cout<<"select the car you want to rtire\n";
+     int carNumber;
+     cin>>carNumber;
+     Car* car = findCar(carNumber);
+     if (car != nullptr)
+     {
+          for (int i = 0; i < vehicles.size(); i++)
+          {
+              if (vehicles[i]->getCarNumber() == car->getCarNumber())
+              {
+                  vehicles.erase(vehicles.begin()+i); // delete it
+              }
+          }
+         save_to_DB(fileName);
+     }
+ }
+
 
 };
 
