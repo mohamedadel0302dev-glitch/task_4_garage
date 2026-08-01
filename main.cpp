@@ -80,6 +80,24 @@ class Car
     {
 return 0;
     }
+
+    virtual string toCSV() const {
+
+        return type + "," +
+            fullnName +","+ racingTeam + "," +
+               to_string(speed) + "," + to_string(carNumber) + "," +
+               to_string(age) + "," + to_string(capacity);
+    }
+ virtual void display()
+    {
+        cout<<"Car Number: "<<carNumber<<endl;
+        cout<<"Type: "<<type<<endl;
+        cout<<"Full Name: "<<fullnName<<endl;
+        cout<<"Racing Team: "<<racingTeam<<endl;
+        cout<<"Capacity: "<<capacity<<endl;
+    }
+
+
 };
 // the Racer
 class Racer : public  Car
@@ -124,6 +142,17 @@ public:
         return getSpeed()*10+getCapacity() ;
     }
 
+    string toCSV() const override
+    {
+        return Car::toCSV() + "," + to_string(nomOfRaceseCompleted ) + "," + to_string(lapsComppleted);
+    }
+
+    void display() override
+    {
+        Car::display();
+        cout << "Races Completed: " << nomOfRaceseCompleted << endl;
+        cout << "Laps Completed: " << lapsComppleted << endl;
+    }
 };
 // the supported car
 class SupportedVeichles : public Car
@@ -158,72 +187,32 @@ class SupportedVeichles : public Car
              reliabilityRatig=r;
          }
      }
-     //--------------------------
+     //-------------------------- overrided method
      int calculatePerformanceScore() override
      {
          return getSpeed()*5+getCapacity()*5;
+     }
+     string toCSV() const override
+     {
+         return Car::toCSV() + "," + to_string(crewSize) + "," + to_string(reliabilityRatig);
+     }
+    void display() override
+     {
+         Car::display();
+         cout << "Crew Size: " << crewSize << endl;
+         cout << "Reliability Rating: " << reliabilityRatig << endl;
      }
  };
 // the garage manager class
 class GarageManager
 {
-  vector<Car *> vehicles;
+    string fileName = "garage_db.txt";
+    vector<Car *> vehicles;
 
  public:
-    // initalize method
-    void readDB (string fileName)
-    {
-        ifstream file(fileName);
-        if (!file.is_open())
-        {
-            return;
-        }
-        string line;
-        while (getline(file,line))
-        {
-            stringstream subtr(line);
-            // declare the base variables
-            string type, fullName, racingTeam; // the string
-            string carNumber, speed, age, capacity; // will be int
 
-            getline(subtr,type,',');
-            getline(subtr,fullName,',');
-            getline(subtr,racingTeam,',');
-            getline(subtr,carNumber,',');
-            getline(subtr,speed,',');
-            getline(subtr,age,',');
-            getline(subtr,capacity,',');
+    //
 
-            if (type=="Racer")
-            {
-                string nomOfRaceseCompleted, lapsCompleted;
-                getline(subtr,nomOfRaceseCompleted,',');
-                getline(subtr,lapsCompleted,',');
-                vehicles.push_back(new Racer(fullName,
-                    racingTeam,stoi(speed),
-                    stoi(carNumber),stoi(age),
-                    stoi(capacity),stoi(nomOfRaceseCompleted),
-                    stoi(lapsCompleted))); // add racer car
-            }
-            else if (type=="Supported Veichle")
-            {
-                string crewSize; // int
-                string reliabilityRatig; // double
-                getline(subtr,crewSize,',');
-                getline(subtr,reliabilityRatig,',');
-                vehicles.push_back(new SupportedVeichles(
-                fullName,
-                racingTeam,
-                stoi(speed),
-                stoi(carNumber),
-                stoi(age),
-                stoi(capacity),
-                stoi(crewSize),
-                stod(reliabilityRatig)
-            )); // add supported vehicle
-            }
-        }
-    }
 
 // add car with check that the car isn't exist
     void addCar(Car *c)
@@ -238,7 +227,9 @@ class GarageManager
         }
         vehicles.push_back(c);
         cout << "Car " << c->getFullName() << " added." << endl;
+
     }
+    // view the cars in the garage
 
 };
 
