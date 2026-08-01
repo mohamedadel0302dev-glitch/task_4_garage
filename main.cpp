@@ -1,8 +1,10 @@
 #include <iostream>
 #include <string>
-
+#include <vector>
+#include <fstream>
+#include <sstream>
 using namespace std;
-
+// the main class the root:
 class Car
 {
     private:
@@ -79,7 +81,7 @@ class Car
 return 0;
     }
 };
-
+// the Racer
 class Racer : public  Car
 {
 private:
@@ -123,9 +125,8 @@ public:
     }
 
 };
-
-
- class SupportedVeichles : public Car
+// the supported car
+class SupportedVeichles : public Car
  {
  private:
      int crewSize;
@@ -163,8 +164,83 @@ public:
          return getSpeed()*5+getCapacity()*5;
      }
  };
+// the garage manager class
+class GarageManager
+{
+  vector<Car *> vehicles;
 
+ public:
+    // initalize method
+    void readDB (string fileName)
+    {
+        ifstream file(fileName);
+        if (!file.is_open())
+        {
+            return;
+        }
+        string line;
+        while (getline(file,line))
+        {
+            stringstream subtr(line);
+            // declare the base variables
+            string type, fullName, racingTeam; // the string
+            string carNumber, speed, age, capacity; // will be int
 
+            getline(subtr,type,',');
+            getline(subtr,fullName,',');
+            getline(subtr,racingTeam,',');
+            getline(subtr,carNumber,',');
+            getline(subtr,speed,',');
+            getline(subtr,age,',');
+            getline(subtr,capacity,',');
+
+            if (type=="Racer")
+            {
+                string nomOfRaceseCompleted, lapsCompleted;
+                getline(subtr,nomOfRaceseCompleted,',');
+                getline(subtr,lapsCompleted,',');
+                vehicles.push_back(new Racer(fullName,
+                    racingTeam,stoi(speed),
+                    stoi(carNumber),stoi(age),
+                    stoi(capacity),stoi(nomOfRaceseCompleted),
+                    stoi(lapsCompleted))); // add racer car
+            }
+            else if (type=="Supported Veichle")
+            {
+                string crewSize; // int
+                string reliabilityRatig; // double
+                getline(subtr,crewSize,',');
+                getline(subtr,reliabilityRatig,',');
+                vehicles.push_back(new SupportedVeichles(
+                fullName,
+                racingTeam,
+                stoi(speed),
+                stoi(carNumber),
+                stoi(age),
+                stoi(capacity),
+                stoi(crewSize),
+                stod(reliabilityRatig)
+            )); // add supported vehicle
+            }
+        }
+    }
+
+// add car with check that the car isn't exist
+    void addCar(Car *c)
+    {
+        for (int i = 0; i < vehicles.size(); i++)
+        {
+            if (vehicles[i]->getCarNumber() == c->getCarNumber())
+            {
+                cout << "Car " << c->getFullName() << " already exists." << endl;
+                return;
+            }
+        }
+        vehicles.push_back(c);
+        cout << "Car " << c->getFullName() << " added." << endl;
+    }
+
+};
 
 
 
