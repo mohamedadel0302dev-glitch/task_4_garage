@@ -3,6 +3,7 @@
 #include <vector>
 #include <fstream>
 #include <sstream>
+#include <map>
 using namespace std;
 // the main class the root:
 class Car
@@ -94,6 +95,8 @@ return 0;
         cout<<"Full Name: "<<fullnName<<endl;
         cout<<"Racing Team: "<<racingTeam<<endl;
         cout<<"Capacity: "<<capacity<<endl;
+        cout<<"Age: "<<age<<endl;
+        cout<<"speed: "<<speed<<endl;
     }
 
 
@@ -214,7 +217,7 @@ class GarageManager
  void save_to_DB(const string& fileName = "garage_db.txt") {
         ofstream file(fileName);
         if (!file.is_open()) {
-            cout << "[ERROR] Could not open file for writing!\n";
+            cout << "Could not open file for writing\n";
             return;
         }
 
@@ -351,16 +354,17 @@ class GarageManager
          {
              string team;
              cout << "Enter new team: ";
-             cin >> team;
+             cin.ignore();
+             getline(cin, team);
              car->serRacingTeam(team);
          }
          else
          {
-             cout << "Invalid choice!\n";
+             cout << "Invalid choice\n";
              return;
          }
 
-         cout << "Car updated successfully!\n";
+         cout << "Car updated successfully\n";
          save_to_DB(fileName);
      }
  }
@@ -373,7 +377,7 @@ class GarageManager
      {
          if (car->getCarNumber() == number)
          {
-             cout << "\n[FOUND] Vehicle Details:" << endl;
+             cout << "\n (founded) Vehicle Details:" << endl;
              car->display();
              return car;
          }
@@ -386,15 +390,17 @@ class GarageManager
 
      void findCar(const string& name) const
      {
+      bool found = false;
          for (Car* car : vehicles)
          {
              if (car->getFullName() == name)
              {
-                 cout << " Vehicle Details:" << endl;
+                 cout << "(founded) Vehicle Details:" << endl;
                  car->display();
-
+             found = true;
              }
          }
+     if (!found)
          cout << "No vehicle found with name: " << name << endl;
      }
     // ---------------------------------------------------------------------//
@@ -422,6 +428,7 @@ class GarageManager
 
     void garageReport()
  {
+
      if (vehicles.empty())
      {
          cout << "Garage is empty!" << endl;
@@ -434,11 +441,37 @@ class GarageManager
      {
          totalScore += vehicles[i]->calculatePerformanceScore();
      }
+
+     vector<pair<string, int>> teamCounts;
+
+     for (int i = 0; i < vehicles.size(); i++)
+     {
+         string currentTeam = vehicles[i]->getRacingTeam();
+         bool found = false;
+         for (int j = 0; j < teamCounts.size(); j++)
+         {
+             if (teamCounts[j].first == currentTeam)
+             {
+                 teamCounts[j].second++;
+                 found = true;
+                 break;
+             }
+         }
+         if (!found)
+         {
+             teamCounts.push_back({currentTeam, 1});
+         }
+     }
+
      cout << "============= Garage Report =============" << endl;
      cout << "-----------------------------------------"<<endl;
      cout<<"Total number of cars: "<<totalCars<<endl;
-     cout << "Total score: " << totalScore << endl;
-
+     cout << "avr score: " << totalScore/totalCars << endl;
+     cout << "\n--- Breakdown by Racing Team ---" << endl;
+     for (int i = 0; i < teamCounts.size(); i++)
+     {
+         cout << "team: " << teamCounts[i].first << " : " << teamCounts[i].second << " cars" << endl;
+     }
  }
 
 };
@@ -447,9 +480,118 @@ class GarageManager
 
 int main()
 {
+    GarageManager manager;
 
+    // read from db first
+    manager.readDB("garage_db.txt");
 
+    int choise = 0;
+
+    while (choise != 8)
+    {
+        if (cin.fail())
+        {
+
+        }
+        cout << "\n=== welcome to garage system ===\n";
+        cout << "1. add new car\n";
+        cout << "2. veiw all cars\n";
+        cout << "3. tune up (updat)\n";
+        cout << "4. find car by num\n";
+        cout << "5. find car by name\n";
+        cout << "6. retire a car\n";
+        cout << "7. garag report\n";
+        cout << "8. exit\n";
+        cout << "entere your choise: ";
+        cin >> choise;
+
+        if (choise == 1)
+        {
+            cout << "\nwhat type?\n1. Racer\n2. support veichle\nchoise: ";
+            int typ;
+            cin >> typ;
+
+            string fn, rt;
+            int s, cn, a, c;
+
+            cout << "enter full name: ";
+            cin.ignore();
+            getline(cin, fn);
+
+            cout << "enter racing team: ";
+            getline(cin, rt);
+
+            cout << "enter speed: "; cin >> s;
+            cout << "enter car number: "; cin >> cn;
+            cout << "enter age: "; cin >> a;
+            cout << "enter capaciy: "; cin >> c;
+
+            if (typ == 1)
+            {
+                int races, laps;
+                cout << "enter races compleeted: "; cin >> races;
+                cout << "enter laps: "; cin >> laps;
+
+                manager.addCar(new Racer(fn, rt, s, cn, a, c, races, laps));
+            }
+            else if (typ == 2)
+            {
+                int crew; double rel;
+                cout << "enter crew size: "; cin >> crew;
+                cout << "enter reliablaty: "; cin >> rel;
+
+                manager.addCar(new SupportedVeichles(fn, rt, s, cn, a, c, crew, rel));
+            }
+            else
+            {
+                cout << "invaild type!\n";
+            }
+        }
+        else if (choise == 2)
+        {
+            cout << "\n--- all cars ---\n";
+            manager.viewCars();
+        }
+        else if (choise == 3)
+        {
+            manager.tune_up();
+        }
+        else if (choise == 4)
+        {
+            int num;
+            cout << "enter car number: ";
+            cin >> num;
+            manager.findCar(num);
+        }
+        else if (choise == 5)
+        {
+            string n;
+            cout << "enter car name: ";
+            cin.ignore();
+            getline(cin, n);
+            manager.findCar(n);
+        }
+        else if (choise == 6)
+        {
+            manager.rtire();
+        }
+        else if (choise == 7)
+        {
+            manager.garageReport();
+        }
+        else if (choise == 8)
+        {
+            cout << "good bye!\n";
+        }
+        else
+        {
+            cout << "wrong choise try again\n";
+            cin.clear();
+            cin.ignore(10000, '\n');
+            continue;
+        }
+
+    }
 
     return 0;
-     // TIP See CLion help at <a href="https://www.jetbrains.com/help/clion/">jetbrains.com/help/clion/</a>. Also, you can try interactive lessons for CLion by selecting 'Help | Learn IDE Features' from the main menu.
 }
